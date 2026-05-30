@@ -1,7 +1,7 @@
 # `prove_verify/`
 
 Side-by-side prove/verify benchmarks of the credential proof used in the
-thesis, in two backends:
+paper, in two backends:
 
 - **`zk-friendly/`** — Circom + Groth16 (rapidsnark prover, snarkjs verifier).
   Poseidon / EdDSA-Poseidon / BabyJub primitives.

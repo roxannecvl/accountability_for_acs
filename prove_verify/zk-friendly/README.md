@@ -19,7 +19,7 @@ zk-friendly/
 ├── merkle_vs_flat_bench/     # Merkle vs flat-Poseidon attribute commitment
 ├── prove_verify/             # full credential proof, CFT variant (32 attrs, 7 disclosed)
 ├── prove_verify_no_cft/      # same proof minus CFT (32 attrs, 5 disclosed)
-├── Dockerfile                # linux/arm64 reproducible image
+├── Dockerfile                # reproducible image (native to your host arch)
 └── package.json              # npm run scripts
 ```
 
@@ -34,32 +34,6 @@ JS file; the script auto-cleans everything except `summary_*.json` and
 | `merkle_vs_flat_bench/` | generated `merkle_t<N>_u<K>.circom` / `flat_t<N>_u<K>.circom` | Merkle inclusion vs Poseidon-fold over `(name, value)` pairs. Sweeps `total ∈ {8,16,32,64}`, `used ∈ {1,2,4,8,16}` (skips `used > total`). |
 | `prove_verify/` | `prove_verify.circom` | Full credential proof, **with CFT**: Poseidon fold over 32 `(claimName, claimValue)` pairs; EdDSA-Poseidon issuer signature; age / validity-window checks; EdDSA-Poseidon hardware signature; BabyJub ElGamal outputs `c1..c4`. 7 disclosed slots (0,1,4,5,6,14,15). |
 | `prove_verify_no_cft/` | `prove_verify_no_cft.circom` | Same proof **without CFT**: drops ID binding + ElGamal relations + `c1..c4`. 5 disclosed slots (4,5,6,14,15); 6 zero-padded public inputs to keep snarkjs' verifier MSM window comparable to the CFT variant. |
-
-## Local prerequisites
-
-Skip everything in this section if you're running through Docker.
-
-- Node 20+
-- `circom` on `PATH` (or set `CIRCOM_BIN` / `CIRCOM`)
-- rapidsnark `prover` on `PATH` (or set `RAPIDSNARK_BIN`)
-- `powersOfTau/powersOfTau28_hez_final_19.ptau` — drop it in, symlink it in,
-  or fetch it with `bash scripts/fetch_ptau.sh`
-- `npm install` (installs `circomlib`, `circomlibjs`, `snarkjs`)
-
-## npm scripts
-
-```bash
-npm run bench:merkle-vs-flat        # merkle_vs_flat_bench/bench_merkle_vs_flat.js
-npm run bench:prove-verify          # prove_verify/bench_prove_verify.js
-npm run bench:prove-verify-no-cft   # prove_verify_no_cft/prove_verify_no_cft.js
-
-npm run clean          # delete generated/ and artifacts (keep summary_*.json)
-npm run clean:all      # same + delete node_modules/
-npm run clean:results  # delete summary JSONs (asks for confirmation)
-```
-
-You can also `node <folder>/<script>.js` directly; all scripts accept the same
-flags and respect `BENCH_N`, etc.
 
 ## CLI flags and environment variables
 
@@ -92,22 +66,18 @@ flags and respect `BENCH_N`, etc.
 
 ## Docker
 
-The Dockerfile targets **`linux/arm64`** (Apple Silicon / aarch64 Linux). On
-amd64 hosts Docker will emulate via QEMU; a native amd64 image would need a
-separate Dockerfile because rapidsnark's NASM (x86_64) path is disabled here
-(`-DUSE_ASM=OFF`).
+The Dockerfile pulls multi-arch `node:20-bullseye`, so the build naturally
+matches whichever architecture the host runs on. rapidsnark is compiled with
+`-DUSE_ASM=OFF`, so the same source path is used on every arch (no separate
+amd64/arm64 image needed).
 
-### Build the image
-
-Run from `prove_verify/zk-friendly/`:
+Build once from `prove_verify/zk-friendly/`:
 
 ```bash
-docker build --platform linux/arm64 -t zk-friendly-prove-verify .
+docker build -t zk-friendly-prove-verify .
 ```
 
-### Run a benchmark
-
-Pick the resource profile that matches the experiment you want.
+Pick the resource profile that matches the experiment:
 
 - **Mobile-like:** `--cpus=2 --memory=4g`
 - **Server-like:** `--cpus=8 --memory=16g`
@@ -115,88 +85,38 @@ Pick the resource profile that matches the experiment you want.
 You **must** pass both `--cpus` and `--memory` (any combination is fine; the
 two profiles above are the ones used in the thesis).
 
-Inside the container, run the script under each benchmark folder. The
-`bash -lc '… >/tmp/bench.log 2>&1 && cat .../summary_latest.json'` form sends
-all console output inside the container and prints only the JSON to host
-stdout, so you can redirect host stdout straight to a `.json` file.
+The `bash -lc '… >/tmp/bench.log 2>&1 && cat .../summary_latest.json'` form
+keeps benchmark console output inside the container and prints only the JSON
+to host stdout, so you can redirect host stdout straight to a `.json` file.
+Swap `--cpus=2 --memory=4g` for `--cpus=8 --memory=16g` for the server
+profile (same command otherwise).
 
-#### Merkle vs flat
-
-Mobile:
+### Merkle vs flat
 
 ```bash
-docker run --rm --platform linux/arm64 --cpus=2 --memory=4g zk-friendly-prove-verify \
+docker run --rm --cpus=2 --memory=4g zk-friendly-prove-verify \
   bash -lc 'cd /bench/merkle_vs_flat_bench && node bench_merkle_vs_flat.js >/tmp/bench.log 2>&1 \
     && cat artifacts_bench_merkle_vs_flat/summary_latest.json' \
   > zk_friendly_merkle_vs_flat.json
 ```
 
-Server:
+### Prove / verify — CFT variant
 
 ```bash
-docker run --rm --platform linux/arm64 --cpus=8 --memory=16g zk-friendly-prove-verify \
-  bash -lc 'cd /bench/merkle_vs_flat_bench && node bench_merkle_vs_flat.js >/tmp/bench.log 2>&1 \
-    && cat artifacts_bench_merkle_vs_flat/summary_latest.json' \
-  > zk_friendly_merkle_vs_flat.json
-```
-
-#### Prove / verify — CFT variant
-
-Mobile:
-
-```bash
-docker run --rm --platform linux/arm64 --cpus=2 --memory=4g zk-friendly-prove-verify \
+docker run --rm --cpus=2 --memory=4g zk-friendly-prove-verify \
   bash -lc 'cd /bench/prove_verify && node bench_prove_verify.js >/tmp/bench.log 2>&1 \
     && cat artifacts_bench_prove_verify/summary_latest.json' \
   > zk_friendly_prove_verify.json
 ```
 
-Server:
+### Prove / verify — no-CFT variant
 
 ```bash
-docker run --rm --platform linux/arm64 --cpus=8 --memory=16g zk-friendly-prove-verify \
-  bash -lc 'cd /bench/prove_verify && node bench_prove_verify.js >/tmp/bench.log 2>&1 \
-    && cat artifacts_bench_prove_verify/summary_latest.json' \
-  > zk_friendly_prove_verify.json
-```
-
-#### Prove / verify — no-CFT variant
-
-Mobile:
-
-```bash
-docker run --rm --platform linux/arm64 --cpus=2 --memory=4g zk-friendly-prove-verify \
+docker run --rm --cpus=2 --memory=4g zk-friendly-prove-verify \
   bash -lc 'cd /bench/prove_verify_no_cft && node prove_verify_no_cft.js >/tmp/bench.log 2>&1 \
     && cat artifacts_bench_prove_verify_no_cft/summary_latest.json' \
   > zk_friendly_prove_verify_no_cft.json
 ```
 
-Server:
-
-```bash
-docker run --rm --platform linux/arm64 --cpus=8 --memory=16g zk-friendly-prove-verify \
-  bash -lc 'cd /bench/prove_verify_no_cft && node prove_verify_no_cft.js >/tmp/bench.log 2>&1 \
-    && cat artifacts_bench_prove_verify_no_cft/summary_latest.json' \
-  > zk_friendly_prove_verify_no_cft.json
-```
-
-### Watch progress, then `docker cp` the summary
-
-Use a named container and **don't** pass `--rm`; `docker cp` works on a
-stopped container until you `docker rm` it. The example below uses the
-mobile profile; swap `--cpus`/`--memory` for the server profile.
-
-```bash
-docker run --name zk-prove-verify -it --platform linux/arm64 \
-  --cpus=2 --memory=4g zk-friendly-prove-verify \
-  bash -lc 'cd /bench/prove_verify && node bench_prove_verify.js'
-
-docker cp zk-prove-verify:/bench/prove_verify/artifacts_bench_prove_verify/summary_latest.json \
-  ./zk_friendly_prove_verify.json
-
-docker rm zk-prove-verify
-```
-
-If a run fails, `docker rm -f <name>` before reusing the same name. Pass
-`BENCH_N` (and other env vars) with `-e BENCH_N=20` before the image name if
-you prefer env over `bash -lc '…'`.
+Pass other env vars (`BENCH_N`, `TOTAL_ATTRS`, …) inside the `bash -lc '…'`
+string, or with `-e VAR=value` before the image name.

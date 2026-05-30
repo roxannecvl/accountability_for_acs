@@ -1,11 +1,11 @@
 # Build context: prove_verify/standard/
 #
-# Target: linux/arm64 (Apple Silicon, aarch64 VMs).
-#   docker build --platform linux/arm64 -t standard-prove-verify .
+# `node:20-bookworm` ships multi-arch manifests, so this image builds natively
+# on whatever host architecture you run on:
+#   docker build -t standard-prove-verify .
 #
-# On amd64 hosts the same command emulates via QEMU. Debian bookworm is
-# required because Bullseye's default clang is too old for this tree's
-# AArch64 NEON intrinsics (e.g. gf2k/sysdep.h).
+# Debian bookworm is used (not bullseye) because the upstream Longfellow tree
+# needs a recent clang.
 FROM node:20-bookworm
 
 WORKDIR /bench
