@@ -5,8 +5,8 @@ const { G, pointSub } = require("./babyjub_noble");
 const {
   randomScalarMod,
   modInv,
-} = require("../benchmark/zk-friendly/lib/crypto_common");
-const { BABYJUB_ORDER } = require("../benchmark/zk-friendly/lib/crypto_babyjub");
+} = require("../prove_verify/zk-friendly/lib/crypto_common");
+const { BABYJUB_ORDER } = require("../prove_verify/zk-friendly/lib/crypto_babyjub");
 
 const aff = (p) => {
   const { x, y } = p.toAffine();

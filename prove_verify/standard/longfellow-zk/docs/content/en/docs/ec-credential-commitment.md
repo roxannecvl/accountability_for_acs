@@ -6,6 +6,6 @@ This Hugo page is a **short index** for the **standard-crypto** benchmarks (full
 
 **Build, Docker, Node helpers, artifact locations, Google Benchmark names, env/flags, and circuit notes** are maintained in the readme next to the Longfellow checkout:
 
-**[`benchmark/standard/README.md`](../../../../../README.md)**
+**[`prove_verify/standard/README.md`](../../../../../README.md)**
 
-(Link target: five levels up from this file to `benchmark/standard/README.md`.)
+(Link target: five levels up from this file to `prove_verify/standard/README.md`.)
