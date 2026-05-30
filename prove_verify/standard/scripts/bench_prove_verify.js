@@ -9,7 +9,7 @@
  * is `prove_verify/zk-friendly/prove_verify/bench_prove_verify.js`.
  *
  * Environment:
- *   BENCH_N               Outer repetitions → --benchmark_repetitions (default 20). Alias: BENCH_REPETITIONS.
+ *   BENCH_N               Outer repetitions → --benchmark_repetitions (default 10). Alias: BENCH_REPETITIONS.
  *   BENCH_ITERATIONS      Inner iterations per repetition → --benchmark_iterations (default 1). auto/0 = adaptive (min_time).
  *   BENCH_MIN_TIME        Passed through (default 0.05s).
  *   BENCH_FILTER          Regex filter (default BM_ProveVerify(Prover|Verifier|FullCycle)_P256.*).
@@ -58,7 +58,7 @@ function printUsage(prog) {
   console.log(`Usage: node ${path.basename(prog)} [options]
 
 Environment (thesis-style):
-  BENCH_N               Outer repetitions (statistical samples). Default 20.
+  BENCH_N               Outer repetitions (statistical samples). Default 10.
   BENCH_REPETITIONS     Alias for BENCH_N.
   BENCH_ITERATIONS      Inner iterations per repetition (default 1). auto or 0 = adaptive from min_time.
   BENCH_MIN_TIME        e.g. 0.05s, 0.2s
@@ -215,13 +215,13 @@ function classifyBench(base) {
 }
 
 function parseArgs(argv) {
-  const repEnv = process.env.BENCH_N ?? process.env.BENCH_REPETITIONS ?? "20";
+  const repEnv = process.env.BENCH_N ?? process.env.BENCH_REPETITIONS ?? "10";
   const out = {
     bin: process.env.LONGFELLOW_CRED_BENCH_BIN || null,
     // Default filter excludes the no-CFT benchmarks (which start with
     // BM_ProveVerifyNoCft) by anchoring on the suffix kind.
     filter: process.env.BENCH_FILTER || "BM_ProveVerify(Prover|Verifier|FullCycle)_P256.*",
-    repetitions: Number(repEnv, 10) || 20,
+    repetitions: Number(repEnv, 10) || 10,
     min_time: process.env.BENCH_MIN_TIME || "0.05s",
     metric: process.env.BENCH_METRIC || "both",
     verbose: argv.includes("--verbose"),

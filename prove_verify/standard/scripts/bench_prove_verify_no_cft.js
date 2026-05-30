@@ -30,7 +30,7 @@ function printUsage(prog) {
   console.log(`Usage: node ${path.basename(prog)} [options]
 
 Environment (thesis-style):
-  BENCH_N               Outer repetitions (statistical samples). Default 20.
+  BENCH_N               Outer repetitions (statistical samples). Default 10.
   BENCH_REPETITIONS     Alias for BENCH_N.
   BENCH_ITERATIONS      Inner iterations per repetition (default 1). auto or 0 = adaptive from min_time.
   BENCH_MIN_TIME        e.g. 0.05s, 0.2s
@@ -177,11 +177,11 @@ function classifyBench(base) {
 }
 
 function parseArgs(argv) {
-  const repEnv = process.env.BENCH_N ?? process.env.BENCH_REPETITIONS ?? "20";
+  const repEnv = process.env.BENCH_N ?? process.env.BENCH_REPETITIONS ?? "10";
   const out = {
     bin: process.env.LONGFELLOW_CRED_BENCH_BIN || null,
     filter: process.env.BENCH_FILTER || "BM_ProveVerifyNoCft.*",
-    repetitions: Number(repEnv, 10) || 20,
+    repetitions: Number(repEnv, 10) || 10,
     min_time: process.env.BENCH_MIN_TIME || "0.05s",
     metric: process.env.BENCH_METRIC || "both",
     verbose: argv.includes("--verbose"),

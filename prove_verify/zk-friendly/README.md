@@ -41,7 +41,7 @@ JS file; the script auto-cleans everything except `summary_*.json` and
 
 | Name | Kind | Default | Meaning |
 |---|---|---|---|
-| `BENCH_N` | env | merkle: `10`, prove-verify: `20`, prove-verify-no-cft: `20` | Measured iterations per circuit / point. Prove-verify benchmarks also run **1 warm-up** iteration that is discarded from stats. |
+| `BENCH_N` | env | `10` | Measured iterations per circuit / point. Prove-verify benchmarks also run **1 warm-up** iteration that is discarded from stats. |
 | `--verbose` | flag | off | Print Circom/Groth16 setup sections, per-circuit min/avg/median/p95/max stats, and extra banners. |
 | `--quiet` | flag | — | No-op (kept for compatibility); quiet console is the default. |
 | `--keep-artifacts` | flag | off | Keep all generated files under `artifacts_bench_*/` and `generated/`. By default everything except `summary_*.json` / `summary_latest.json` is removed at the end of the run. |

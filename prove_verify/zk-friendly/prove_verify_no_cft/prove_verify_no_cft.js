@@ -31,7 +31,7 @@ const ARTIFACTS_DIR = `./artifacts_bench_${DEMO_NAME}`;
 const RAPIDSNARK_BIN = process.env.RAPIDSNARK_BIN || "prover";
 const CIRCOM_BIN = process.env.CIRCOM_BIN || process.env.CIRCOM || "circom";
 
-const N = parseInt(process.env.BENCH_N ?? "20", 10);
+const N = parseInt(process.env.BENCH_N ?? "10", 10);
 const VERBOSE = process.argv.includes("--verbose");
 const QUIET = !VERBOSE;
 const KEEP_ARTIFACTS = process.argv.includes("--keep-artifacts") || process.env.KEEP_ARTIFACTS === "1";

@@ -45,7 +45,7 @@ paths resolve against `prove_verify/standard/`).
 
 Both scripts share the same defaults:
 
-- 20 outer repetitions (`BENCH_N` / `--n` / `--repetitions`)
+- 10 outer repetitions (`BENCH_N` / `--n` / `--repetitions`)
 - 1 inner iteration per repetition (`BENCH_ITERATIONS` / `--iterations`; use
   `0` or `auto` for adaptive)
 - `min_time = 0.05s` (`BENCH_MIN_TIME` / `--min_time`)
@@ -61,7 +61,7 @@ Both scripts share the same defaults:
 
 | Variable | Meaning |
 |---|---|
-| `BENCH_N` | Outer GB repetitions → `--benchmark_repetitions` (default 20). Alias: `BENCH_REPETITIONS`. |
+| `BENCH_N` | Outer GB repetitions → `--benchmark_repetitions` (default 10). Alias: `BENCH_REPETITIONS`. |
 | `BENCH_ITERATIONS` | Inner iterations → `--benchmark_iterations` (default 1; `0` / `auto` = adaptive). |
 | `BENCH_MIN_TIME` | e.g. `0.05s`, `0.2s`. |
 | `BENCH_FILTER` | Regex. Defaults: `BM_ProveVerify(Prover\|Verifier\|FullCycle)_P256.*` (CFT; the suffix anchor avoids matching the no-CFT names) or `BM_ProveVerifyNoCft.*` (no-CFT). |
@@ -109,8 +109,7 @@ to host stdout, so you can redirect host stdout straight to a `.json` file.
 
 ```bash
 docker run --rm --cpus=2 --memory=4g standard-prove-verify \
-  bash -lc 'cd /bench && BENCH_N=10 BENCH_MIN_TIME=0.05s \
-    node scripts/bench_prove_verify.js >/tmp/bench.log 2>&1 \
+  bash -lc 'cd /bench && node scripts/bench_prove_verify.js >/tmp/bench.log 2>&1 \
     && cat artifacts_bench_prove_verify/summary_latest.json' \
   > standard_prove_verify.json
 ```
@@ -122,8 +121,7 @@ profile (same command otherwise).
 
 ```bash
 docker run --rm --cpus=2 --memory=4g standard-prove-verify \
-  bash -lc 'cd /bench && BENCH_N=10 BENCH_MIN_TIME=0.05s \
-    node scripts/bench_prove_verify_no_cft.js >/tmp/bench.log 2>&1 \
+  bash -lc 'cd /bench && node scripts/bench_prove_verify_no_cft.js >/tmp/bench.log 2>&1 \
     && cat artifacts_bench_prove_verify_no_cft/summary_latest.json' \
   > standard_prove_verify_no_cft.json
 ```
