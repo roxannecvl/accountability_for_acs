@@ -1,5 +1,4 @@
-# Frontdoors, Not Backdoors: Accountable Anonymity
-for National Digital Identity
+# Frontdoors, Not Backdoors: Accountable Anonymity for National Digital Identity
 
 Companion code for the paper **"Frontdoors, Not Backdoors: Accountable Anonymity
 for National Digital Identity"**. This repository contains the benchmarks
