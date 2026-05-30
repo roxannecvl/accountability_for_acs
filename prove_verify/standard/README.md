@@ -1,5 +1,8 @@
 # Standard (Longfellow) prove/verify benchmarks
 
+> The Longfellow C++ code under `longfellow-zk/` was copied (and modified)
+> from <https://github.com/google/longfellow-zk/tree/main> (Apache-2.0).
+
 Google Benchmark drivers for the C++ credential-commitment proofs in a
 trimmed [Longfellow](https://github.com/google/longfellow-zk) `lib/` tree.
 Counterpart to the Circom + Groth16 drivers under `../zk-friendly/`.
