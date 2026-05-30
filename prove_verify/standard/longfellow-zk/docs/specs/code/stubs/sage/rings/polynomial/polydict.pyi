@@ -1,0 +1,9 @@
+from collections.abc import Iterator
+
+
+class ETuple:
+    def is_constant(self) -> bool: ...
+
+    def unweighted_degree(self) -> int: ...
+
+    def sparse_iter(self) -> Iterator[tuple[int, int]]: ...

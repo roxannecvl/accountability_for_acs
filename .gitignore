@@ -1,0 +1,63 @@
+# ─── OS / filesystem metadata ────────────────────────────────────────────────
+# macOS Finder metadata, resource forks, Spotlight/Trash indexes
+.DS_Store
+**/.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# Linux
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ─── Editors / IDEs ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.history/
+.cursor/
+
+# ─── Jupyter / notebooks ─────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ─── Node.js ─────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.pnpm-store/
+
+# ─── Logs / temp ─────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+
+# ─── Secrets / local config ──────────────────────────────────────────────────
+.env
+.env.*
+!.env.example

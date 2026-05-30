@@ -1,0 +1,23 @@
+{
+  "name": "eid-revocation-bench",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check-env": "node check_env.js",
+    "verify": "node verify_link.js",
+    "experiment:direct-decrypt": "node run_experiment.js direct-decrypt",
+    "experiment:link-decrypt": "node run_experiment.js link-decrypt",
+    "mpc:sweep": "bash mpc/run_sweep.sh",
+    "mpc:summarize": "python3 mpc/summarize.py",
+    "regenerate": "node regenerate_from_runs.js"
+  },
+  "dependencies": {
+    "@noble/curves": "1.9.7",
+    "big-integer": "1.6.52",
+    "circomlibjs": "0.1.7"
+  }
+}

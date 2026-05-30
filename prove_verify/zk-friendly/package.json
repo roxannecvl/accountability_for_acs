@@ -1,0 +1,19 @@
+{
+  "name": "zk-friendly-prove-verify",
+  "private": true,
+  "version": "0.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "clean": "bash scripts/clean.sh",
+    "clean:all": "bash scripts/clean.sh --all",
+    "clean:results": "bash scripts/clean_results.sh",
+    "bench:merkle-vs-flat": "node merkle_vs_flat_bench/bench_merkle_vs_flat.js",
+    "bench:prove-verify": "node prove_verify/bench_prove_verify.js",
+    "bench:prove-verify-no-cft": "node prove_verify_no_cft/prove_verify_no_cft.js"
+  },
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "snarkjs": "^0.7.5"
+  }
+}

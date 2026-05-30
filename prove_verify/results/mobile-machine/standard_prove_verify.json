@@ -1,0 +1,122 @@
+{
+  "meta": {
+    "type": "longfellow-p256-sha-credential",
+    "backend": "credential_commitment_proof_flat32_test",
+    "bin": "/bench/clang-build-release/circuits/tests/ec/credential_commitment_proof_flat32_test",
+    "bench_n": 10,
+    "benchmark_iterations": 1,
+    "filter": "BM_CredentialCommitmentFlat32.*",
+    "repetitions": 10,
+    "min_time": "0.05s",
+    "metric": "both",
+    "artifacts_dir": "/bench/artifacts_bench_longfellow_full_credential_flat32",
+    "timestampIso": "2026-05-23T08:13:39.652Z",
+    "warmup_repetitions_discarded": 1
+  },
+  "byBenchmark": {
+    "BM_CredentialCommitmentFlat32FullCycle_P256/1": {
+      "statsMs": {
+        "cpu_time": {
+          "minMs": 2948.4109909999747,
+          "maxMs": 3100.4468239999883,
+          "avgMs": 3016.464726599992,
+          "p95Ms": 3076.2342410000088
+        },
+        "real_time": {
+          "minMs": 2949.071364000247,
+          "maxMs": 3101.4897179998115,
+          "avgMs": 3017.220368300059,
+          "p95Ms": 3077.0208429999
+        }
+      },
+      "kind": "fullCycle"
+    },
+    "BM_CredentialCommitmentFlat32Prover_P256/1": {
+      "statsMs": {
+        "cpu_time": {
+          "minMs": 1609.2014090000007,
+          "maxMs": 1767.4187849999967,
+          "avgMs": 1648.5887392999998,
+          "p95Ms": 1750.965366999999
+        },
+        "real_time": {
+          "minMs": 1609.3554489998496,
+          "maxMs": 1767.8806980002264,
+          "avgMs": 1648.9390723999804,
+          "p95Ms": 1751.5698379997957
+        }
+      },
+      "kind": "prover"
+    },
+    "BM_CredentialCommitmentFlat32Verifier_P256/1": {
+      "statsMs": {
+        "cpu_time": {
+          "minMs": 1341.7394940000092,
+          "maxMs": 1401.828787999989,
+          "avgMs": 1355.3312747999996,
+          "p95Ms": 1372.3997459999994
+        },
+        "real_time": {
+          "minMs": 1341.9116150002992,
+          "maxMs": 1401.9523259999005,
+          "avgMs": 1355.641276399956,
+          "p95Ms": 1373.145549999663
+        }
+      },
+      "kind": "verifyOnly"
+    }
+  },
+  "rollup": {
+    "prover": {
+      "benchmark": "BM_CredentialCommitmentFlat32Prover_P256/1",
+      "statsMs": {
+        "cpu_time": {
+          "minMs": 1609.2014090000007,
+          "maxMs": 1767.4187849999967,
+          "avgMs": 1648.5887392999998,
+          "p95Ms": 1750.965366999999
+        },
+        "real_time": {
+          "minMs": 1609.3554489998496,
+          "maxMs": 1767.8806980002264,
+          "avgMs": 1648.9390723999804,
+          "p95Ms": 1751.5698379997957
+        }
+      }
+    },
+    "verifyOnly": {
+      "benchmark": "BM_CredentialCommitmentFlat32Verifier_P256/1",
+      "statsMs": {
+        "cpu_time": {
+          "minMs": 1341.7394940000092,
+          "maxMs": 1401.828787999989,
+          "avgMs": 1355.3312747999996,
+          "p95Ms": 1372.3997459999994
+        },
+        "real_time": {
+          "minMs": 1341.9116150002992,
+          "maxMs": 1401.9523259999005,
+          "avgMs": 1355.641276399956,
+          "p95Ms": 1373.145549999663
+        }
+      }
+    },
+    "fullCycle": {
+      "benchmark": "BM_CredentialCommitmentFlat32FullCycle_P256/1",
+      "statsMs": {
+        "cpu_time": {
+          "minMs": 2948.4109909999747,
+          "maxMs": 3100.4468239999883,
+          "avgMs": 3016.464726599992,
+          "p95Ms": 3076.2342410000088
+        },
+        "real_time": {
+          "minMs": 2949.071364000247,
+          "maxMs": 3101.4897179998115,
+          "avgMs": 3017.220368300059,
+          "p95Ms": 3077.0208429999
+        }
+      }
+    }
+  }
+}

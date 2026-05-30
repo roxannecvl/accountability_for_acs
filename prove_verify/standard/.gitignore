@@ -1,0 +1,9 @@
+# standard (Longfellow C++) — project-specific ignores.
+# OS metadata, editor files, and node_modules/ are covered by the root .gitignore.
+
+# C++ build directory (cmake -B clang-build-release).
+clang-build-release/
+
+# Node bench summaries written by scripts/bench_prove_verify{,_no_cft}.js.
+/artifacts_bench_prove_verify/
+/artifacts_bench_prove_verify_no_cft/
