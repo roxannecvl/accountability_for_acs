@@ -357,7 +357,7 @@ async function main() {
     }[rawBin.toLowerCase()] || rawBin;
     console.log(`MPC binary: ${mpcBinary}`);
 
-    const spdzPath = process.env.MP_SPDZ_PATH || "/home/smishy/mp-spdz-0.4.2";
+    const spdzPath = process.env.MP_SPDZ_PATH;
     const mpcSrcPath = path.join(__dirname, "predicate_matrix_partials.mpc");
     const csvPath = process.env.RESULTS_CSV || path.join(__dirname, "results.csv");
     const tau = minPidCount;
