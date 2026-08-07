@@ -30,11 +30,6 @@ function modInv(a, m) {
   return t;
 }
 
-function sha256Utf8ToField(message, modulus) {
-  const digest = crypto.createHash("sha256").update(message, "utf8").digest();
-  return bytesToBigIntBE(digest) % BigInt(modulus);
-}
-
 function randomScalarMod(modulus, { nonZero = false } = {}) {
   const m = BigInt(modulus);
   while (true) {
@@ -47,6 +42,5 @@ function randomScalarMod(modulus, { nonZero = false } = {}) {
 module.exports = {
   mod,
   modInv,
-  sha256Utf8ToField,
   randomScalarMod,
 };

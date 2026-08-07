@@ -7,13 +7,14 @@
     "node": ">=18"
   },
   "scripts": {
-    "check-env": "node check_env.js",
-    "verify": "node verify_link.js",
-    "experiment:direct-decrypt": "node run_experiment.js direct-decrypt",
-    "experiment:link-decrypt": "node run_experiment.js link-decrypt",
-    "mpc:sweep": "bash mpc/run_sweep.sh",
+    "verify": "node link-decrypt/verify_link.js",
+    "experiment": "node lib/run_experiments.js",
+    "bench:direct-decrypt": "node direct-decrypt/bench_direct_decrypt.js",
+    "bench:link-decrypt": "node link-decrypt/bench_link_decrypt.js",
+    "bench:mpc": "bash mpc/run_sweep.sh",
     "mpc:summarize": "python3 mpc/summarize.py",
-    "regenerate": "node regenerate_from_runs.js"
+    "plot": "python3 results/plots/plot_experiment_figures.py",
+    "regenerate": "node scripts/regenerate_from_runs.js"
   },
   "dependencies": {
     "@noble/curves": "1.9.7",

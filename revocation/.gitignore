@@ -1,6 +1,4 @@
-# revocation — project-specific ignores.
-# OS metadata, editor files, and node_modules/ are covered by the root .gitignore.
+node_modules/
 
 # Raw MP-SPDZ sweep outputs (results.csv / run.log / run.stdout).
-# Plot-ready CSVs land in results/ after `python3 mpc/summarize.py`.
 mpc/sweep_*/

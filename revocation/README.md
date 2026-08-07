@@ -1,42 +1,66 @@
-# Anonymity revocation experiments
+# Anonymity revocation benchmarks
 
-Two revocation throughput experiments on Baby Jubjub:
+Baby Jubjub CFT revocation throughput (Node 18+). C4 binding matches zk-friendly `prove_verify.circom`.
 
-- **direct-decrypt** — decrypt every CFT (police + judge + NGO each partially decrypt all CFTs, then combine).
-- **link-decrypt** — first link every CFT to a PID, keep only PIDs appearing in ≥ 10% of the set, then decrypt only those.
-- **mpc-decrypt** — PET + MP-SPDZ predicate matrix (requires a local MP-SPDZ install via `MP_SPDZ_PATH`).
+| Dir | Experiment |
+|-----|------------|
+| `direct-decrypt/` | Decrypt every CFT (police + judge + NGO) |
+| `link-decrypt/` | Link to PIDs, keep ≥10% recurring, decrypt those |
+| `mpc/` | PET + MP-SPDZ predicate matrix (needs `MP_SPDZ_PATH`) |
+| `lib/` | Shared crypto / experiment harness |
+| `results/` | CSVs; PDFs under `results/plots/` |
 
-## Run (in order)
-
-Requires Node 18.x with the pinned `@noble/curves@1.9.7` (see `package.json`).
+## Setup
 
 ```bash
-
-# 1. from current directory: one-off install + sanity checks
+cd revocation
 npm ci
-npm run check-env     # checks Base8 matches circom
-npm run verify        # checks the link-decrypt protocol is correct
-
-# 2. the two experiments (each does 9 sizes × 3 recurring% × 10 runs = 270 runs)
-npm run experiment:direct-decrypt  
-npm run experiment:link-decrypt     
-
-# 3. figures
-python3 plot_experiment_figures.py
+npm run verify          # optional: link-decrypt protocol sanity check
 ```
 
-Outputs to `results/`:
-
-| File | Produced by |
-|---|---|
-| `direct-decrypt_runs.csv` / `_summary.csv` / `_fit.csv` / `_total_time.pdf` | `experiment:direct-decrypt` + `plot_experiment_figures.py` |
-| `link-decrypt_runs.csv` / `_summary.csv` / `_fit.csv` / `_total_time.pdf` | `experiment:link-decrypt` + `plot_experiment_figures.py` |
-| `mpc-decrypt_runs.csv` / `_summary.csv` / `_fit.csv` | `mpc:sweep` + `mpc:summarize` (included in combined plot) |
-
-For **mpc-decrypt** (requires MP-SPDZ), run `MP_SPDZ_PATH=/path/to/mp-spdz npm run mpc:sweep` then `npm run mpc:summarize -- mpc/sweep_*/results.csv` to write the plot-ready CSVs into `results/`.
-
-Optional knobs for a quick smoke test:
+## Benchmarks
 
 ```bash
-EXPERIMENT_SIZES=100,500 EXPERIMENT_RUNS=2 npm run experiment:direct-decrypt
+npm run bench:direct-decrypt
+npm run bench:link-decrypt
+npm run experiment      # both (direct then link)
+
+# MPC (requires local MP-SPDZ)
+MP_SPDZ_PATH=/path/to/mp-spdz npm run bench:mpc
+npm run mpc:summarize -- mpc/sweep_*/results.csv
+
+npm run plot            # PDFs → results/plots/
+```
+
+| Env | Default | Meaning |
+|-----|---------|---------|
+| `EXPERIMENT_SIZES` | `10,20,50,100,500,1000,2000,4000,8000` | CFT set sizes (direct/link) |
+| `EXPERIMENT_RUNS` | `10` | Runs per (size × recurring%) cell |
+| `NUMS` | `10 20 50 100 200 500 1000` | CFT sizes for MPC sweep |
+| `ITERATIONS` | `10` | Runs per size (MPC) |
+| `TAU` | `2` | MPC predicate threshold |
+| `MP_SPDZ_PATH` | — | Path to MP-SPDZ install (MPC) |
+
+Smoke test:
+
+```bash
+EXPERIMENT_SIZES=100,500 EXPERIMENT_RUNS=2 npm run bench:direct-decrypt
+```
+
+Outputs: `results/{direct,link,mpc}-decrypt_{runs,summary,fit}.csv` and `results/plots/*_total_time.pdf`.
+
+## Docker
+
+```bash
+cd revocation
+docker build -t revocation-bench -f Dockerfile .
+```
+
+```bash
+# server-like; bind-mount results/
+mkdir -p results
+docker run --rm --cpus=8 --memory=16g --memory-swap=16g \
+  -v "$(pwd)/results:/bench/results" \
+  revocation-bench \
+  bash -lc 'npm run experiment'
 ```

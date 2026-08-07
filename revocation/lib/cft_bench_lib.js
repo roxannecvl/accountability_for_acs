@@ -5,8 +5,9 @@ const { G, pointSub } = require("./babyjub_noble");
 const {
   randomScalarMod,
   modInv,
-} = require("../prove-verify/zk-friendly/lib/crypto_common");
-const { BABYJUB_ORDER } = require("../prove-verify/zk-friendly/lib/crypto_babyjub");
+} = require("./crypto_common");
+const { BABYJUB_ORDER } = require("./crypto_babyjub");
+const { c4TagMessage, signC4, verifyC4, getEddsaContext } = require("./c4_binding");
 
 const aff = (p) => {
   const { x, y } = p.toAffine();
@@ -17,10 +18,6 @@ const ptKey = (p) => {
   const [x, y] = aff(p);
   return `${x},${y}`;
 };
-
-function c4Hash(poseidon, IDu, t, P) {
-  return poseidon.F.toString(poseidon([IDu[0], IDu[1], t, P[0], P[1]]));
-}
 
 function setupKeys() {
   const key = () => {
@@ -41,28 +38,44 @@ function shuffle(arr) {
   return arr;
 }
 
-/** One recurring ID in `recurringPct` of slots; rest unique. */
-function buildCftBatch(poseidon, pkAg, n, recurringPct) {
+/** One recurring ID in `recurringPct` of slots; rest unique. C4 = EdDSA on Poseidon(t, D2). */
+function buildCftBatch(poseidon, pkAg, n, recurringPct, benchCtx) {
+  const eddsaCtx = benchCtx?.eddsaCtx;
+  if (!eddsaCtx) {
+    throw new Error("buildCftBatch: requires eddsaCtx from initBenchContext()");
+  }
+
   const pidThreshold = Math.max(2, Math.ceil(n * 0.1));
   const nRecurring = Math.max(Math.round(n * recurringPct), pidThreshold);
   const nUnique = n - nRecurring;
-  const idRecurring = G.multiply(randomScalarMod(BABYJUB_ORDER, { nonZero: true }));
+  const idRecurringSk = randomScalarMod(BABYJUB_ORDER, { nonZero: true });
+  const idRecurring = G.multiply(idRecurringSk);
 
   const idSlots = [];
-  for (let i = 0; i < nRecurring; i++) idSlots.push(idRecurring);
+  for (let i = 0; i < nRecurring; i++) {
+    idSlots.push({ IDu: idRecurring, userSk: idRecurringSk });
+  }
   for (let i = 0; i < nUnique; i++) {
-    idSlots.push(G.multiply(randomScalarMod(BABYJUB_ORDER, { nonZero: true })));
+    const userSk = randomScalarMod(BABYJUB_ORDER, { nonZero: true });
+    idSlots.push({ IDu: G.multiply(userSk), userSk });
   }
   shuffle(idSlots);
 
-  const mkCft = (IDu) => {
+  const mkCft = ({ IDu, userSk }) => {
     const r1 = randomScalarMod(BABYJUB_ORDER, { nonZero: true });
     const r2 = randomScalarMod(BABYJUB_ORDER, { nonZero: true });
     const t = randomScalarMod(BABYJUB_ORDER, { nonZero: true });
     const C1 = G.multiply(r1);
     const C2 = G.multiply(r2);
     const C3 = IDu.add(pkAg.multiply(r1));
-    const C4 = c4Hash(poseidon, aff(IDu), t, aff(pkAg.multiply(r2)));
+    const d2Aff = aff(pkAg.multiply(r2));
+    const tagMsg = c4TagMessage(poseidon, t, d2Aff);
+    const C4 = signC4({
+      eddsa: eddsaCtx.eddsa,
+      babyJub: eddsaCtx.babyJub,
+      userSk,
+      tagMsgField: tagMsg,
+    });
     return { C1, C2, C3, C4, t: t.toString(), D1: C1, D3: C3 };
   };
 
@@ -75,6 +88,13 @@ function buildCftBatch(poseidon, pkAg, n, recurringPct) {
     idKeyRecurring: ptKey(idRecurring),
     pidThreshold,
   };
+}
+
+async function initBenchContext() {
+  const poseidon = await getPoseidon();
+  const keys = setupKeys();
+  const eddsaCtx = await getEddsaContext();
+  return { poseidon, keys, eddsaCtx };
 }
 
 function partialDecrypt(C1, C2, sk) {
@@ -112,6 +132,16 @@ function reverseK(point, k) {
   return point.multiply(modInv(k, BABYJUB_ORDER));
 }
 
+function verifyC4ForCft(poseidon, cft, IDu, d2) {
+  return verifyC4({
+    poseidon,
+    IDuAff: aff(IDu),
+    t: BigInt(cft.t),
+    d2Aff: aff(d2),
+    c4Sig: cft.C4,
+  });
+}
+
 /** Direct decrypt (many_CFTs). All n CFTs; n_after = n. */
 function benchManyCfts(poseidon, batch, keys) {
   const { cfts } = batch;
@@ -131,7 +161,7 @@ function benchManyCfts(poseidon, batch, keys) {
     const d1 = police.d1.add(ngoShares[i].d1).add(judgeShares[i].d1);
     const d2 = police.d2.add(ngoShares[i].d2).add(judgeShares[i].d2);
     const IDu = pointSub(cfts[i].C3, d1);
-    if (c4Hash(poseidon, aff(IDu), BigInt(cfts[i].t), aff(d2)) !== cfts[i].C4) {
+    if (!verifyC4ForCft(poseidon, cfts[i], IDu, d2)) {
       throw new Error("C4 verification failed (many_CFTs)");
     }
   }
@@ -198,7 +228,7 @@ function benchLinkDecrypt(poseidon, batch, keys) {
   for (const e of judgeOut) {
     const ID = reverseK(e.pidJ, pu.k);
     const d2 = e.C2.multiply(keys.police.sk).add(e.d2N).add(e.d2J);
-    if (c4Hash(poseidon, aff(ID), BigInt(e.t), aff(d2)) !== e.C4) {
+    if (!verifyC4ForCft(poseidon, e, ID, d2)) {
       throw new Error("C4 verification failed (link-decrypt)");
     }
   }
@@ -257,9 +287,11 @@ function fitTimeModel(samples) {
 
 module.exports = {
   getPoseidon,
+  initBenchContext,
   setupKeys,
   buildCftBatch,
   benchManyCfts,
   benchLinkDecrypt,
   fitTimeModel,
+  partialDecrypt,
 };

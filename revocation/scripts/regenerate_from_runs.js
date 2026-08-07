@@ -5,7 +5,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { fitTimeModel } = require("./cft_bench_lib");
+const { fitTimeModel } = require("../lib/cft_bench_lib");
 
 const VALID = ["direct-decrypt", "link-decrypt", "mpc-decrypt"];
 
@@ -91,7 +91,7 @@ function writeCsv(filePath, headers, rows) {
 }
 
 function regenerateDirectOrLink(benchmark, allRuns) {
-  const prefix = path.join(__dirname, "results", benchmark);
+  const prefix = path.join(__dirname, "..", "results", benchmark);
   const sizes = [...new Set(allRuns.map((r) => r.set_size))].sort((a, b) => a - b);
   const recurringPcts = [...new Set(allRuns.map((r) => r.recurring_pct))]
     .filter((p) => p !== "" && Number.isFinite(Number(p)))
@@ -172,7 +172,7 @@ function regenerateDirectOrLink(benchmark, allRuns) {
 
 function regenerateMpc(allRuns) {
   const benchmark = "mpc-decrypt";
-  const prefix = path.join(__dirname, "results", benchmark);
+  const prefix = path.join(__dirname, "..", "results", benchmark);
   const sorted = [...allRuns].sort(
     (a, b) => a.set_size - b.set_size || a.run - b.run
   );
@@ -259,7 +259,7 @@ function main() {
     process.exit(1);
   }
 
-  const prefix = path.join(__dirname, "results", benchmark);
+  const prefix = path.join(__dirname, "..", "results", benchmark);
   const allRuns = parseCsv(fs.readFileSync(`${prefix}_runs.csv`, "utf8"));
 
   const result =

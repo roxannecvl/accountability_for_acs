@@ -57,7 +57,7 @@ FONT_LEGEND = 18
 
 
 def configure_mpl() -> None:
-    # Match workspace/revocation/plot_experiment_figures.py (thesis style).
+    # Match revocation/results/plots/plot_experiment_figures.py (thesis style).
     mpl.rcParams.update(
         {
             "pdf.fonttype": 42,  # TrueType in PDF (sharp in viewers)

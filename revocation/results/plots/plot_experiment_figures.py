@@ -12,16 +12,16 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-RESULTS_DIR = Path(__file__).resolve().parent / "results"
+PLOTS_DIR = Path(__file__).resolve().parent
+RESULTS_DIR = PLOTS_DIR.parent
 FIGSIZE = (5, 4)
 FIGSIZE_COMBINED = (6, 4)
-RECURRING_PCTS = [10, 20, 50]
+RECURRING_PCTS = [10, 50]
 COLOR_DIRECT = "#d62728"   # red — full decrypt (leaky)
 COLOR_LINK_10 = "#008000"  # green
-COLOR_LINK_20 = "#00897b"  # teal (individual plot middle series)
 COLOR_LINK_50 = "#17becf"  # lighter teal/cyan (contrasts with green)
 COLOR_MPC = "#ff7f0e"      # orange
-COLORS = {10: COLOR_LINK_10, 20: COLOR_LINK_20, 50: COLOR_LINK_50}
+COLORS = {10: COLOR_LINK_10, 50: COLOR_LINK_50}
 COMBINED_COLORS = {10: COLOR_LINK_10, 50: COLOR_LINK_50}
 MIN_SET_SIZE = 10
 PLOT_SIZES = [10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000]
@@ -302,13 +302,20 @@ def main() -> None:
         default=RESULTS_DIR,
         help="Directory containing *_runs.csv files",
     )
+    parser.add_argument(
+        "--plots-dir",
+        type=Path,
+        default=PLOTS_DIR,
+        help="Directory for output PDFs",
+    )
     args = parser.parse_args()
     setup_thesis_style()
-    out_dir = args.results_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
+    results_dir = args.results_dir
+    plots_dir = args.plots_dir
+    plots_dir.mkdir(parents=True, exist_ok=True)
 
-    direct_path = out_dir / "direct-decrypt_runs.csv"
-    link_path = out_dir / "link-decrypt_runs.csv"
+    direct_path = results_dir / "direct-decrypt_runs.csv"
+    link_path = results_dir / "link-decrypt_runs.csv"
     if not direct_path.is_file():
         raise SystemExit(f"Missing {direct_path}")
     if not link_path.is_file():
@@ -317,11 +324,11 @@ def main() -> None:
     direct_rows = load_runs(direct_path)
     link_rows = load_runs(link_path)
 
-    plot_direct_decrypt(direct_rows, out_dir / "direct-decrypt_total_time")
-    plot_link_decrypt(link_rows, out_dir / "link-decrypt_total_time")
+    plot_direct_decrypt(direct_rows, plots_dir / "direct-decrypt_total_time")
+    plot_link_decrypt(link_rows, plots_dir / "link-decrypt_total_time")
 
-    mpc_runs_path = out_dir / "mpc-decrypt_runs.csv"
-    mpc_fit_path = out_dir / "mpc-decrypt_fit.csv"
+    mpc_runs_path = results_dir / "mpc-decrypt_runs.csv"
+    mpc_fit_path = results_dir / "mpc-decrypt_fit.csv"
     if mpc_runs_path.is_file() and mpc_fit_path.is_file():
         mpc_rows = load_mpc_runs(mpc_runs_path)
         k_ms_per_pair = load_mpc_fit(mpc_fit_path)
@@ -330,7 +337,7 @@ def main() -> None:
             link_rows,
             mpc_rows,
             k_ms_per_pair,
-            out_dir / "revocation_combined_total_time",
+            plots_dir / "revocation_combined_total_time",
         )
     else:
         print("Skipping combined plot (missing mpc-decrypt_runs.csv or mpc-decrypt_fit.csv)")

@@ -40,14 +40,14 @@ async function compileMpc({ spdzPath, mpcSrcPath, name, args }) {
   return fullName;
 }
 
-async function runMpc({ spdzPath, fullName, T = 3, binary = "mascot-party.x" }) {
-  console.log(`[mpc] launching ${T} parties: ${binary} ${fullName}`);
+async function runMpc({ spdzPath, fullName, T = 3 }) {
+  console.log(`[mpc] launching ${T} parties: shamir-party.x ${fullName}`);
   const t0 = Date.now();
   const procs = [];
   const outs = new Array(T).fill("");
   const errs = new Array(T).fill("");
   for (let i = 0; i < T; i++) {
-    const p = spawn(`./${binary}`,
+    const p = spawn("./shamir-party.x",
       ["-v", "-N", String(T), "-p", String(i), fullName],
       { cwd: spdzPath });
     p.stdout.on("data", (c) => { outs[i] += c.toString(); });

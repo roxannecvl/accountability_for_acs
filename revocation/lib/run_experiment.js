@@ -2,7 +2,7 @@
 "use strict";
 
 /**
- * Grid experiment for one benchmark: set_size × recurring_pct × 10 runs.
+ * Grid experiment for one benchmark: set_size × (recurring_pct for link only) × runs.
  * Usage: node run_experiment.js direct-decrypt
  *        node run_experiment.js link-decrypt
  */
@@ -10,8 +10,7 @@
 const fs = require("fs");
 const path = require("path");
 const {
-  getPoseidon,
-  setupKeys,
+  initBenchContext,
   buildCftBatch,
   benchManyCfts,
   benchLinkDecrypt,
@@ -19,9 +18,12 @@ const {
 } = require("./cft_bench_lib");
 
 const SIZES = [10, 20, 50, 100, 500, 1000, 2000, 4000, 8000];
-const RECURRING_PCTS = [0.1, 0.2, 0.5];
+/** direct-decrypt: recurring mix does not affect timing (one batch per size). */
+const DIRECT_RECURRING_PCTS = [0.1];
+/** link-decrypt: sweep recurring ID rate. */
+const LINK_RECURRING_PCTS = [0.1, 0.5];
 const RUNS = Number(process.env.EXPERIMENT_RUNS || 10);
-const OUT_DIR = path.join(__dirname, "results");
+const OUT_DIR = path.join(__dirname, "..", "results");
 const VALID_BENCHMARKS = ["direct-decrypt", "link-decrypt"];
 
 function resolveBenchmark() {
@@ -32,6 +34,22 @@ function resolveBenchmark() {
     process.exit(1);
   }
   return name;
+}
+
+function parseRecurringPctsEnv() {
+  const raw = process.env.EXPERIMENT_RECURRING_PCTS;
+  if (!raw) return null;
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => Number(s) / 100);
+}
+
+function recurringPctsForBenchmark(benchmark) {
+  const fromEnv = parseRecurringPctsEnv();
+  if (fromEnv?.length) return fromEnv;
+  return benchmark === "direct-decrypt" ? DIRECT_RECURRING_PCTS : LINK_RECURRING_PCTS;
 }
 
 function nsToMs(ns) {
@@ -59,12 +77,18 @@ function meanStd(values) {
   return { mean, std: Math.sqrt(variance) };
 }
 
-async function runScenario(benchmark, poseidon, keys, setSize, recurringPct, run) {
-  const batch = buildCftBatch(poseidon, keys.pkAg, setSize, recurringPct);
+async function runScenario(benchmark, benchCtx, setSize, recurringPct, run) {
+  const batch = buildCftBatch(
+    benchCtx.poseidon,
+    benchCtx.keys.pkAg,
+    setSize,
+    recurringPct,
+    benchCtx
+  );
   const result =
     benchmark === "direct-decrypt"
-      ? benchManyCfts(poseidon, batch, keys)
-      : benchLinkDecrypt(poseidon, batch, keys);
+      ? benchManyCfts(benchCtx.poseidon, batch, benchCtx.keys)
+      : benchLinkDecrypt(benchCtx.poseidon, batch, benchCtx.keys);
 
   if (
     benchmark === "link-decrypt" &&
@@ -94,28 +118,32 @@ async function runScenario(benchmark, poseidon, keys, setSize, recurringPct, run
   };
 }
 
-async function main() {
-  const benchmark = resolveBenchmark();
-  const sizes = process.env.EXPERIMENT_SIZES
-    ? process.env.EXPERIMENT_SIZES.split(",").map(Number)
-    : SIZES;
+async function runExperiment(benchmark, options = {}) {
+  const sizes = options.sizes ?? (
+    process.env.EXPERIMENT_SIZES
+      ? process.env.EXPERIMENT_SIZES.split(",").map(Number)
+      : SIZES
+  );
+  const recurringPcts = options.recurringPcts ?? recurringPctsForBenchmark(benchmark);
   const prefix = path.join(OUT_DIR, benchmark);
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const poseidon = await getPoseidon();
-  const keys = setupKeys();
+  const benchCtx = options.benchCtx ?? (await initBenchContext());
 
   const allRuns = [];
-  const totalScenarios = sizes.length * RECURRING_PCTS.length * RUNS;
+  const totalScenarios = sizes.length * recurringPcts.length * RUNS;
   let done = 0;
 
   console.log("CFT experiment: %s", benchmark);
   console.log(
     "  sizes=%s recurring%%=%s runs=%d",
     sizes.join(","),
-    RECURRING_PCTS.map((p) => Math.round(p * 100)).join(","),
+    recurringPcts.map((p) => Math.round(p * 100)).join(","),
     RUNS
   );
+  if (benchmark === "direct-decrypt") {
+    console.log("  (direct-decrypt: recurring%% is not swept — one batch per set_size)");
+  }
   console.log("  model: t_total_ms ≈ t1·set_size + t2·set_size_after_filter");
   if (benchmark === "link-decrypt") {
     console.log("  PID threshold = 10%% of set_size");
@@ -123,7 +151,7 @@ async function main() {
   console.log("");
 
   for (const setSize of sizes) {
-    for (const recurringPct of RECURRING_PCTS) {
+    for (const recurringPct of recurringPcts) {
       for (let run = 1; run <= RUNS; run++) {
         done += 1;
         process.stdout.write(
@@ -131,8 +159,7 @@ async function main() {
         );
         const row = await runScenario(
           benchmark,
-          poseidon,
-          keys,
+          benchCtx,
           setSize,
           recurringPct,
           run
@@ -143,30 +170,28 @@ async function main() {
     }
   }
 
-  writeCsv(
-    `${prefix}_runs.csv`,
-    [
-      "benchmark",
-      "set_size",
-      "recurring_pct",
-      "run",
-      "pid_threshold",
-      "n_recurring_expected",
-      "n_after_filter",
-      "t_total_ms",
-      "t_link_ms",
-      "t_decrypt_ms",
-      "t_per_input_cft_ms",
-      "t_ngo_ms",
-      "t_judge_ms",
-      "t_police_ms",
-    ],
-    allRuns
-  );
+  const runHeaders = [
+    "benchmark",
+    "set_size",
+    "recurring_pct",
+    "run",
+    "pid_threshold",
+    "n_recurring_expected",
+    "n_after_filter",
+    "t_total_ms",
+    "t_link_ms",
+    "t_decrypt_ms",
+    "t_per_input_cft_ms",
+    "t_ngo_ms",
+    "t_judge_ms",
+    "t_police_ms",
+  ];
+
+  writeCsv(`${prefix}_runs.csv`, runHeaders, allRuns);
 
   const summaryRows = [];
   for (const setSize of sizes) {
-    for (const recurringPct of RECURRING_PCTS) {
+    for (const recurringPct of recurringPcts) {
       const pct = Math.round(recurringPct * 100);
       const subset = allRuns.filter(
         (r) => r.set_size === setSize && r.recurring_pct === pct
@@ -243,9 +268,22 @@ async function main() {
   console.log(`  ${prefix}_summary.csv  (x=set_size, y=recurring_pct)`);
   console.log(`  ${prefix}_fit.csv`);
   console.log(`  ${formula}`);
+
+  return { benchmark, prefix, formula, benchCtx };
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+async function main() {
+  await runExperiment(resolveBenchmark());
+}
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  runExperiment,
+  VALID_BENCHMARKS,
+};

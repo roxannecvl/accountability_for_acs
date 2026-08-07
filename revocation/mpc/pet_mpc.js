@@ -14,13 +14,13 @@ const path = require("path");
  * No signatures. Same ID mix as many_CFTs: 20% A, 5% B, 75% unique.
  */
 
-const { getPoseidon } = require("../poseidon_cjs");
-const { G, pointSub } = require("../babyjub_noble");
+const { getPoseidon } = require("../lib/poseidon_cjs");
+const { G, pointSub } = require("../lib/babyjub_noble");
 const {
   randomScalarMod,
   modInv,
-} = require("../../prove-verify/zk-friendly/lib/crypto_common");
-const { BABYJUB_ORDER } = require("../../prove-verify/zk-friendly/lib/crypto_babyjub");
+} = require("../lib/crypto_common");
+const { BABYJUB_ORDER } = require("../lib/crypto_babyjub");
 const aff = (p) => {
     const { x, y } = p.toAffine();
     return [x, y];
@@ -157,7 +157,7 @@ function writeMpcInputsDistributed({ spdzPath, MprimeMat, N }) {
 // One scenario run: build a corpus, run the PET phase, run MPC, do the
 // integrity check, append a row to the CSV. Returns the row for caller
 // inspection if needed.
-async function runOnce({ iter, numCfts, tau, poseidon, spdzPath, mpcSrcPath, csvPath, mpcBinary }) {
+async function runOnce({ iter, numCfts, tau, poseidon, spdzPath, mpcSrcPath, csvPath }) {
     const { compileMpc, runMpc, parsePredicates, parseSpdzStats, appendCsv } =
       require("./mpc_runner");
 
@@ -266,7 +266,7 @@ async function runOnce({ iter, numCfts, tau, poseidon, spdzPath, mpcSrcPath, csv
 
     // ── Timing: MPC wall + parse stderr for online/offline ─────────
     const tMpcStart = process.hrtime.bigint();
-    const { stdouts, stderrs } = await runMpc({ spdzPath, fullName, T: 3, binary: mpcBinary });
+    const { stdouts, stderrs } = await runMpc({ spdzPath, fullName, T: 3 });
     const mpcWallMs = Number(process.hrtime.bigint() - tMpcStart) / 1e6;
 
     const predicates = parsePredicates(stdouts[0], numCfts);
@@ -350,14 +350,7 @@ async function main() {
     const minPidCount = Number(process.env.CFT_MIN_PID_COUNT || 2);
     const poseidon = await getPoseidon();
 
-    const rawBin = (process.env.MPC_BINARY || "shamir-party.x").trim();
-    const mpcBinary = {
-    shamir: "shamir-party.x",
-    mascot: "mascot-party.x",
-    }[rawBin.toLowerCase()] || rawBin;
-    console.log(`MPC binary: ${mpcBinary}`);
-
-    const spdzPath = process.env.MP_SPDZ_PATH;
+    const spdzPath = process.env.MP_SPDZ_PATH || "/home/smishy/mp-spdz-0.4.2";
     const mpcSrcPath = path.join(__dirname, "predicate_matrix_partials.mpc");
     const csvPath = process.env.RESULTS_CSV || path.join(__dirname, "results.csv");
     const tau = minPidCount;
@@ -389,7 +382,6 @@ async function main() {
                 spdzPath,
                 mpcSrcPath,
                 csvPath,
-                mpcBinary,
             });
         }
     }
