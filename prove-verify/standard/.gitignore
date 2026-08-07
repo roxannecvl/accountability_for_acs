@@ -1,0 +1,6 @@
+# Presentation benchmark summaries / artifacts (per bench folder)
+**/artifacts_bench_*/
+**/artifacts_measure_communication_size/
+
+# Docker reproduction summaries
+results/

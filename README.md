@@ -6,7 +6,7 @@ reported in the paper.
 
 ## Layout
 
-- [`prove_verify/`](prove_verify/) — proof **generation** and **verification**
+- [`prove-verify/`](prove-verify/) — proof **generation** and **verification**
   benchmarks (zk-friendly Circom/Groth16 backend and Longfellow C++ backend,
   both with a CFT and a no-CFT variant).
 - [`revocation/`](revocation/) — **anonymity revocation** benchmarks
