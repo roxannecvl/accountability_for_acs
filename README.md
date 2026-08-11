@@ -8,7 +8,7 @@ reported in the paper.
 
 - [`prove-verify/`](prove-verify/) — proof **generation** and **verification**
   benchmarks (zk-friendly Circom/Groth16 backend and Longfellow C++ backend,
-  both with a CFT and a no-CFT variant).
+  both with a CFT, a no-CFT, and a CFT + non-revocation proof variant).
 - [`revocation/`](revocation/) — **anonymity revocation** benchmarks
   (direct decrypt, link decrypt, and MP-SPDZ-based MPC decrypt).
 
