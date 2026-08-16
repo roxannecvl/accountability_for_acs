@@ -81,3 +81,7 @@ npm run clean          # drop proofs/witnesses + generated/ (keep summary_*.json
 npm run clean:results  # delete artifact folders (summaries too)
 npm run clean:all      # proofs/witnesses + generated/ + summaries + node_modules
 ```
+
+## License
+
+Code in this folder is under the workspace **MIT** license (`../../LICENSE`).

@@ -79,3 +79,9 @@ docker run --rm --cpus=8 --memory=16g --memory-swap=16g standard-bench \
 npm run clean:results  # delete local artifact/summary folders (asks for confirmation)
 npm run clean:all      # same + remove longfellow-zk/clang-build-release
 ```
+
+## License
+
+Benchmark harness and circuit wrappers here are under the workspace **MIT**
+license (`../../LICENSE`). Vendored `longfellow-zk/` remains **Apache 2.0**
+(Google LLC).

@@ -20,3 +20,9 @@ npm run bench:communication-size      # wire size (CFT + non revoc claim 2^12…
 Pre-recorded summaries: `results/{mobile,server}-env/`, `results/proof-sizes/`.
 
 See each stack README for Docker and local setup.
+
+## License
+
+Original code in this folder is under the workspace **MIT** license
+(`../LICENSE`). The vendored `standard/longfellow-zk/` tree is **Apache 2.0**
+(Google LLC)—see that directory’s `LICENSE`.

@@ -64,3 +64,7 @@ docker run --rm --cpus=8 --memory=16g --memory-swap=16g \
   revocation-bench \
   bash -lc 'npm run experiment'
 ```
+
+## License
+
+Code in this folder is under the workspace **MIT** license (`../LICENSE`).

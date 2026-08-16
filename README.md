@@ -13,3 +13,13 @@ reported in the paper.
   (direct decrypt, link decrypt, and MP-SPDZ-based MPC decrypt).
 
 See the README inside each folder for build, run, and Docker instructions.
+
+## License
+
+Unless noted otherwise, original code in this tree is released under the
+**MIT License** (see [`LICENSE`](LICENSE)).
+
+Third-party components keep their own licenses. In particular, the vendored
+Longfellow tree at `prove-verify/standard/longfellow-zk/` is **Apache License
+2.0** (Copyright © Google LLC; see that directory’s `LICENSE`). Do not treat
+Longfellow sources as MIT-licensed.
